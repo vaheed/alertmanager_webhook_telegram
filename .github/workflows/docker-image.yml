@@ -29,5 +29,13 @@ jobs:
         push: true
         tags: vaheed/webhook-server:latest
 
-    - name: Logout from DockerHub
-      run: docker logout
+    - name: Deploy to Kubernetes
+      uses: manusa/actions-setup-minikube@v2
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      with:
+        minikube version: 'latest'
+        kubernetes version: 'latest'
+      run: |
+        kubectl apply -f webhook-server.yaml
