@@ -1,6 +1,6 @@
 import json
 import requests
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
@@ -9,12 +9,23 @@ TELEGRAM_CHAT_ID = 'your_telegram_chat_id'
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    data = request.json
-    alerts = data.get('alerts', [])
-    for alert in alerts:
-        message = format_alert_message(alert)
-        send_telegram_message(message)
-    return '', 204
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "Invalid JSON"}), 400
+
+        alerts = data.get('alerts', [])
+        if not alerts:
+            return jsonify({"error": "No alerts found in the request"}), 400
+
+        for alert in alerts:
+            message = format_alert_message(alert)
+            send_telegram_message(message)
+
+        return '', 204
+    except Exception as e:
+        print(f"Error processing the webhook: {e}")
+        return jsonify({"error": str(e)}), 500
 
 def format_alert_message(alert):
     status = alert.get('status', 'N/A')
@@ -25,7 +36,7 @@ def format_alert_message(alert):
     severity = labels.get('severity', 'N/A')
     namespace = labels.get('namespace', 'N/A')
     pod = labels.get('pod', 'N/A')
-    description = annotations.get('description', 'No description provided.')
+    description = annotations.get('message', 'No description provided.')
     starts_at = alert.get('startsAt', 'N/A')
     ends_at = alert.get('endsAt', 'N/A')
     
@@ -52,6 +63,7 @@ def send_telegram_message(message):
         'Content-Type': 'application/json'
     }
     response = requests.post(url, data=json.dumps(payload), headers=headers)
+    print(f"Telegram API response: {response.status_code} {response.text}")  # Log the response
     if not response.ok:
         print(f"Failed to send message: {response.text}")
 
