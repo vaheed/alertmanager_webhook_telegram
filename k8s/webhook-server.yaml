@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: webhook-server
-        image: your_dockerhub_username/webhook-server:latest
+        image: vaheed/webhook-server:latest
         ports:
         - containerPort: 5000
         env:
