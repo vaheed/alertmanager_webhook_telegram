@@ -1,25 +1,36 @@
 import json
+import os
 import requests
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-TELEGRAM_BOT_TOKEN = 'your_telegram_bot_token'
-TELEGRAM_CHAT_ID = 'your_telegram_chat_id'
+# Get the Telegram bot token and chat ID from environment variables
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
         data = request.json
         if not data:
+            print("Received invalid JSON")
             return jsonify({"error": "Invalid JSON"}), 400
+
+        # Print the entire incoming JSON payload to the log
+        print("Received webhook payload:")
+        print(json.dumps(data, indent=4))
 
         alerts = data.get('alerts', [])
         if not alerts:
+            print("No alerts found in the request")
             return jsonify({"error": "No alerts found in the request"}), 400
 
         for alert in alerts:
+            print(f"Processing alert: {alert}")
             message = format_alert_message(alert)
+            print(f"Formatted message: {message}")
             send_telegram_message(message)
 
         return '', 204
@@ -53,7 +64,6 @@ def format_alert_message(alert):
     return message
 
 def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         'chat_id': TELEGRAM_CHAT_ID,
         'text': message,
@@ -62,10 +72,16 @@ def send_telegram_message(message):
     headers = {
         'Content-Type': 'application/json'
     }
-    response = requests.post(url, data=json.dumps(payload), headers=headers)
-    print(f"Telegram API response: {response.status_code} {response.text}")  # Log the response
+    response = requests.post(TELEGRAM_API_URL, data=json.dumps(payload), headers=headers)
+    print(f"Telegram API response status: {response.status_code}")
+    print(f"Telegram API response text: {response.text}")
     if not response.ok:
         print(f"Failed to send message: {response.text}")
 
 if __name__ == '__main__':
+    # Ensure the necessary environment variables are set
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Error: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID environment variables must be set.")
+        exit(1)
+        
     app.run(host='0.0.0.0', port=5000)
