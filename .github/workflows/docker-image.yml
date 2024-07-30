@@ -40,8 +40,8 @@ jobs:
 
     - name: Deploy to Kubernetes
       env:
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.bot.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.bot.TELEGRAM_CHAT_ID }}
       run: |
         kubectl apply -f k8s/webhook-server.yaml
 
