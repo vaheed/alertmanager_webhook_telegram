@@ -5,9 +5,17 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+# Get the Telegram bot token and chat ID from environment variables
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+
+# Configuration: Define which severities to send messages for
+SEVERITY_CONFIG = {
+    "critical": True,
+    "warning": False,
+    "info": False
+}
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -27,6 +35,11 @@ def webhook():
             return jsonify({"error": "No alerts found in the request"}), 400
 
         for alert in alerts:
+            severity = alert.get('labels', {}).get('severity', '').lower()
+            if not SEVERITY_CONFIG.get(severity, False):
+                print(f"Ignoring alert with severity '{severity}': {alert}")
+                continue
+
             print(f"Processing alert: {alert}")
             message = format_alert_message(alert)
             print(f"Formatted message: {message}")
