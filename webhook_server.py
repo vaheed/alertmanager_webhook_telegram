@@ -51,10 +51,18 @@ def format_alert_message(alert):
     starts_at = alert.get('startsAt', 'N/A')
     ends_at = alert.get('endsAt', 'N/A')
     
+    # Adding emojis based on status and severity
+    status_emoji = "✅" if status == "resolved" else "🔥"
+    severity_emoji = {
+        "critical": "🚨",
+        "warning": "⚠️",
+        "info": "ℹ️"
+    }.get(severity, "")
+    
     message = (
-        f"*Alert:* {alertname}\n"
+        f"{status_emoji} *Alert:* {alertname}\n"
         f"*Status:* {status}\n"
-        f"*Severity:* {severity}\n"
+        f"{severity_emoji} *Severity:* {severity}\n"
         f"*Namespace:* {namespace}\n"
         f"*Pod:* {pod}\n"
         f"*Description:* {description}\n"
