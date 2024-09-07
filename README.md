@@ -36,7 +36,7 @@ This project implements a webhook server that receives alerts from Kubernetes Al
 
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/k8s-alertmanager-webhook.git
+   git clone https://github.com/vaheed/k8s-alertmanager-webhook.git
    cd k8s-alertmanager-webhook
    ```
 
