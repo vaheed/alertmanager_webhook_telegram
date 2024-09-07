@@ -13,7 +13,7 @@ TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessag
 # Configuration: Define which severities to send messages for
 SEVERITY_CONFIG = {
     "critical": True,
-    "warning": False,
+    "warning": True,
     "info": False
 }
 
@@ -49,6 +49,10 @@ def webhook():
     except Exception as e:
         print(f"Error processing the webhook: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy"}), 200
 
 def format_alert_message(alert):
     status = alert.get('status', 'N/A')
@@ -103,5 +107,6 @@ if __name__ == '__main__':
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         print("Error: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID environment variables must be set.")
         exit(1)
-        
+    
+    # Run the Flask app
     app.run(host='0.0.0.0', port=5000)
